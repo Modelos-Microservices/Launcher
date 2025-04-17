@@ -1,0 +1,61 @@
+services:
+
+  nats-server:
+    image: nats:latest
+    ports:
+      #Solo exponemos el puerto 8222 para poder monitorizar el servidor NATS los demas no es necesario porque es una red interna de docker y como no se conectas desde el exterior no es necesario exponerlos
+      # - 4222:4222 # NATS server port
+      - "8222:8222" # NATS monitoring port
+      # - 6222:6222 # NATS clustering port
+  gateway:
+    build: ./gateway
+    ports:
+      - ${CLIENT_GATEWAY_PORT}:3000
+    volumes:
+      - ./gateway/src:/usr/src/app/src
+    command: npm run start:dev
+    environment:
+      - PORT=3000
+      - NATS_SERVERS=nats://nats-server:4222
+      - WATCHPACK_POLLING=true
+
+  products-ms:
+    build: ./products-ms
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./products-ms/src:/usr/src/app/src
+    command: npm run start:dev
+    environment:
+      - PORT=3001
+      - NATS_SERVERS=nats://nats-server:4222
+      - WATCHPACK_POLLING=true
+      - DATABASE_URL=file:./dev.db
+
+  orders-ms:
+    build: ./orders-ms
+    depends_on:
+      - orders-database
+    ports:
+      - "3002:3002"
+    volumes:
+      - ./orders-ms/src:/usr/src/app/src
+    command: npm run start:dev
+    environment:
+      - PORT=3002
+      - NATS_SERVERS=nats://nats-server:4222
+      - WATCHPACK_POLLING=true
+      - DATABASE_URL=postgres://postgres:123@orders_database:5432/orders_db
+
+  orders-database:
+    container_name: orders_database
+    image: postgres:latest
+    restart: always
+    volumes:
+      - ./orders-ms/postgres:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=123
+      - POSTGRES_DB=orders_db
