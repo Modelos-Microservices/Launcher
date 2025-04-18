@@ -1,3 +1,9 @@
 [submodule "gateway"]
 	path = gateway
 	url = https://github.com/Modelos-Microservices/Gateway.git
+[submodule "products-ms"]
+	path = products-ms
+	url = https://github.com/Modelos-Microservices/Products-Microservice.git
+[submodule "orders-ms"]
+	path = orders-ms
+	url = https://github.com/Modelos-Microservices/Orders-Microservice.git
