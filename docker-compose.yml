@@ -58,3 +58,23 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=123
       - POSTGRES_DB=orders_db
+
+
+#Payments Microservice
+  payments-ms:
+    container_name: payments-ms
+    build: ./payments-ms
+    ports:
+      - "3003:3003"
+    volumes:
+      - ./payments-ms/src:/usr/src/app/src
+    command: npm run start:dev
+    environment:
+      - PORT=${PAYMENTS_MS_PORT}
+      - NATS_SERVERS=nats://nats-server:4222
+      - WATCHPACK_POLLING=true
+      - STRIPE_SECRET_KEY=${PAYMENTS_MS_STRIPE_SECRET_KEY}
+      - STRIPE_SUCCESS_URL=${PAYMENTS_MS_STRIPE_SUCCESS_URL}
+      - STRIPE_CANCEL_URL=${PAYMENTS_MS_STRIPE_CANCEL_URL}
+      - STRIPE_ENDPOINT_SECRET=${PAYMENTS_MS_STRIPE_ENDPOINT_SECRET}
+      - HOOKDECK_API_KEY=${HOOKDECK_API_KEY}
