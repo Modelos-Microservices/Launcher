@@ -7,6 +7,9 @@ services:
       # - 4222:4222 # NATS server port
       - "8222:8222" # NATS monitoring port
       # - 6222:6222 # NATS clustering port
+    networks:
+      - app-network
+  
   gateway:
     build: ./gateway
     ports:
@@ -18,6 +21,16 @@ services:
       - PORT=3000
       - NATS_SERVERS=nats://nats-server:4222
       - WATCHPACK_POLLING=true
+      - KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET}
+      - KEYCLOAK_HOST=${KEYCLOAK_HOST}
+      - KEYCLOAK_REALM=${KEYCLOAK_REALM}
+      - KEYCLOAK_CLIENT_ID=${KEYCLOAK_CLIENT_ID}
+      - KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN}
+      - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}
+      - KEYCLOAK_DB_PASSWORD=${KEYCLOAK_DB_PASSWORD}
+    networks:
+      - app-network
+
   products-ms:
     build: ./products-ms
     ports:
@@ -30,6 +43,8 @@ services:
       - NATS_SERVERS=nats://nats-server:4222
       - WATCHPACK_POLLING=true
       - DATABASE_URL=file:./dev.db
+    networks:
+      - app-network
 
   orders-ms:
     build: ./orders-ms
@@ -45,6 +60,8 @@ services:
       - NATS_SERVERS=nats://nats-server:4222
       - WATCHPACK_POLLING=true
       - DATABASE_URL=postgres://postgres:123@orders_database:5432/orders_db
+    networks:
+      - app-network
 
   orders-database:
     container_name: orders_database
@@ -58,6 +75,8 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=123
       - POSTGRES_DB=orders_db
+    networks:
+      - app-network
 
 
 #Payments Microservice
@@ -78,3 +97,47 @@ services:
       - STRIPE_CANCEL_URL=${PAYMENTS_MS_STRIPE_CANCEL_URL}
       - STRIPE_ENDPOINT_SECRET=${PAYMENTS_MS_STRIPE_ENDPOINT_SECRET}
       - HOOKDECK_API_KEY=${HOOKDECK_API_KEY}
+    networks:
+      - app-network
+
+
+#Keycloak Authentication
+
+  keycloak-db:
+    image: postgres:latest  # Cambiado a latest para usar la versión más reciente
+    container_name: keycloak_postgres
+    environment:
+      - POSTGRES_DB=keycloak
+      - POSTGRES_USER=keycloak_user
+      - POSTGRES_PASSWORD=${KEYCLOAK_DB_PASSWORD}
+      - POSTGRES_HOST_AUTH_METHOD=trust  # Para solucionar el problema de autenticación
+    volumes:
+      - keycloak_postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    networks:
+      - app-network
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest  # También podemos usar la última versión de Keycloak
+    container_name: keycloak_microservice
+    environment:
+      - KC_DB=postgres
+      - KC_DB_URL=jdbc:postgresql://keycloak-db:5432/keycloak
+      - KC_DB_USERNAME=keycloak_user
+      - KC_DB_PASSWORD=${KEYCLOAK_DB_PASSWORD}
+      - KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN}
+      - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}
+    command: start-dev
+    ports:
+      - "8080:8080"
+    depends_on:
+      - keycloak-db
+    networks:
+      - app-network
+
+networks:
+  app-network:
+
+volumes:
+  keycloak_postgres_data:
