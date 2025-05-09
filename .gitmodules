@@ -13,3 +13,9 @@
 [submodule "categories-ms"]
 	path = categories-ms
 	url = https://github.com/Modelos-Microservices/categories-ms.git
+[submodule "debts-ms"]
+	path = debts-ms
+	url = https://github.com/Modelos-Microservices/debts-ms.git
+[submodule "favorites-ms"]
+	path = favorites-ms
+	url = https://github.com/Modelos-Microservices/favorites-ms.git
