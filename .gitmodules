@@ -19,3 +19,6 @@
 [submodule "favorites-ms"]
 	path = favorites-ms
 	url = https://github.com/Modelos-Microservices/favorites-ms.git
+[submodule "reviews"]
+	path = reviews
+	url = https://github.com/Modelos-Microservices/reviews-ms.git
