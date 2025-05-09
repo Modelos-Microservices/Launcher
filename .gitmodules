@@ -10,3 +10,6 @@
 [submodule "payments-ms"]
 	path = payments-ms
 	url = https://github.com/Modelos-Microservices/Payments-Microservice.git
+[submodule "categories-ms"]
+	path = categories-ms
+	url = https://github.com/Modelos-Microservices/categories-ms.git
