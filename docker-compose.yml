@@ -35,6 +35,8 @@ services:
     build: ./products-ms
     ports:
       - "3001:3001"
+    depends_on:
+      - products-database
     volumes:
       - ./products-ms/src:/usr/src/app/src
     command: npm run start:dev
@@ -42,7 +44,120 @@ services:
       - PORT=3001
       - NATS_SERVERS=nats://nats-server:4222
       - WATCHPACK_POLLING=true
-      - DATABASE_URL=file:./dev.db
+      - DATABASE_URL=postgres://postgres:123@products_database:5432/products_db
+    networks:
+      - app-network
+
+  products-database:
+    container_name: products_database
+    image: postgres:latest
+    restart: always
+    volumes:
+      - ./products-ms/postgres:/var/lib/postgresql/data
+    ports:
+      - 5434:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=123
+      - POSTGRES_DB=products_db
+    networks:
+      - app-network
+
+
+  debts-ms:
+    build: ./debts-ms
+    ports:
+      - "3008:3008"
+    depends_on:
+      - debts-database
+    volumes:
+      - ./debts-ms/src:/usr/src/app/src
+    command: npm run start:dev
+    environment:
+      - PORT=3008
+      - NATS_SERVERS=nats://nats-server:4222
+      - WATCHPACK_POLLING=true
+      - DATABASE_URL=postgres://postgres:123@debts_database:5432/debts_db
+    networks:
+      - app-network
+
+  debts-database:
+    container_name: debts_database
+    image: postgres:latest
+    restart: always
+    volumes:
+      - ./debts-ms/postgres:/var/lib/postgresql/data
+    ports:
+      - 5438:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=123
+      - POSTGRES_DB=debts_db
+    networks:
+      - app-network
+
+  categories-ms:
+    build: ./categories-ms
+    ports:
+      - "3005:3005"
+    depends_on:
+      - categories-database
+    volumes:
+      - ./categories-ms/src:/usr/src/app/src
+    command: npm run start:dev
+    environment:
+      - PORT=3005
+      - NATS_SERVERS=nats://nats-server:4222
+      - WATCHPACK_POLLING=true
+      - DATABASE_URL=postgres://postgres:123@categories_database:5432/categories_db
+    networks:
+      - app-network
+
+  categories-database:
+    container_name: categories_database
+    image: postgres:latest
+    restart: always
+    volumes:
+      - ./categories-ms/postgres:/var/lib/postgresql/data
+    ports:
+      - 5435:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=123
+      - POSTGRES_DB=categories_db
+    networks:
+      - app-network
+
+
+  reviews-ms:
+    build: ./reviews
+    ports:
+      - "3006:3006"
+    depends_on:
+      - reviews-database
+    volumes:
+      - ./reviews/src:/usr/src/app/src
+    command: npm run start:dev
+    environment:
+      - PORT=3006
+      - NATS_SERVERS=nats://nats-server:4222
+      - WATCHPACK_POLLING=true
+      - DATABASE_URL=postgres://postgres:123@reviews_database:5432/reviews_db
+    networks:
+      - app-network
+
+  reviews-database:
+    container_name: reviews_database
+    image: postgres:latest
+    restart: always
+    volumes:
+      - ./reviews/postgres:/var/lib/postgresql/data
+    ports:
+      - 5436:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=123
+      - POSTGRES_DB=reviews_db
     networks:
       - app-network
 
@@ -78,6 +193,37 @@ services:
     networks:
       - app-network
 
+  favorites-ms:
+    build: ./favorites-ms
+    depends_on:
+      - favorites-database
+    ports:
+      - "3007:3007"
+    volumes:
+      - ./favorites-ms/src:/usr/src/app/src
+    command: npm run start:dev
+    environment:
+      - PORT=3007
+      - NATS_SERVERS=nats://nats-server:4222
+      - WATCHPACK_POLLING=true
+      - DATABASE_URL=postgres://postgres:123@favorites_database:5432/favorites_db
+    networks:
+      - app-network
+
+  favorites-database:
+    container_name: favorites_database
+    image: postgres:latest
+    restart: always
+    volumes:
+      - ./favorites-ms/postgres:/var/lib/postgresql/data
+    ports:
+      - 5437:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=123
+      - POSTGRES_DB=favorites_db
+    networks:
+      - app-network
 
 #Payments Microservice
   payments-ms:
