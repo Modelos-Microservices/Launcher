@@ -243,6 +243,7 @@ services:
       - STRIPE_CANCEL_URL=${PAYMENTS_MS_STRIPE_CANCEL_URL}
       - STRIPE_ENDPOINT_SECRET=${PAYMENTS_MS_STRIPE_ENDPOINT_SECRET}
       - HOOKDECK_API_KEY=${HOOKDECK_API_KEY}
+      - MAIL_SECRET_KEY=${MAIL_SECRET_KEY}
     networks:
       - app-network
 
@@ -255,7 +256,6 @@ services:
     environment:
       - POSTGRES_DB=keycloak
       - POSTGRES_USER=keycloak_user
-      - POSTGRES_PASSWORD=${KEYCLOAK_DB_PASSWORD}
       - POSTGRES_HOST_AUTH_METHOD=trust  # Para solucionar el problema de autenticación
     volumes:
       - keycloak_postgres_data:/var/lib/postgresql/data
@@ -275,12 +275,15 @@ services:
       - KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN}
       - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}
     command: start-dev
+    volumes:
+    - ./keycloak-themes:/opt/keycloak/themes
     ports:
       - "8080:8080"
     depends_on:
       - keycloak-db
     networks:
       - app-network
+
 
 networks:
   app-network:
